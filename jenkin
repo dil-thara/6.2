@@ -1,0 +1,94 @@
+pipeline {
+    agent any
+    
+    environment {
+        EMAIL_RECIPIENT = 'diltharanethmkni@gmail.com'
+    }
+
+    stages {
+        stage('Build') {
+            steps {
+                script {
+                    echo 'Building the project using Maven...'
+                    // Example: sh 'mvn clean package'
+                }
+            }
+        }
+        
+        stage('Unit and Integration Tests') {
+            steps {
+                script {
+                    echo 'Running unit and integration tests with JUnit...'
+                    // Example: sh 'mvn test'
+                }
+            }
+        }
+        
+        stage('Code Analysis') {
+            steps {
+                script {
+                    echo 'Analyzing the code using SonarQube...'
+                    // Example: sh 'sonar-scanner'
+                }
+            }
+        }
+        
+        stage('Security Scan') {
+            steps {
+                script {
+                    echo 'Running security scan using OWASP Dependency-Check...'
+                    // Example: sh 'dependency-check.sh --project example --scan ./'
+                }
+            }
+        }
+        
+        stage('Deploy to Staging') {
+            steps {
+                script {
+                    echo 'Deploying to staging server...'
+                    // Example: sh 'scp target/*.war user@staging-server:/path/to/app'
+                }
+            }
+        }
+        
+        stage('Integration Tests on Staging') {
+            steps {
+                script {
+                    echo 'Running integration tests on staging server...'
+                    // Example: sh 'curl -s http://staging-server/healthcheck'
+                }
+            }
+        }
+        
+        stage('Deploy to Production') {
+            steps {
+                script {
+                    echo 'Deploying to production server...'
+                    // Example: sh 'scp target/*.war user@production-server:/path/to/app'
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+
+        failure {
+            echo 'Pipeline failed!'
+        }
+
+        always {
+            script {
+                emailext (
+                    subject: "Build ${currentBuild.fullDisplayName}: ${currentBuild.currentResult}",
+                    body: "Build ${currentBuild.fullDisplayName} finished with status ${currentBuild.currentResult}. Logs attached.",
+                    recipientProviders: [[$class: 'DevelopersRecipientProvider']],
+                    attachLog: true,
+                    to: "${EMAIL_RECIPIENT}"
+                )
+            }
+        }
+    }
+}
